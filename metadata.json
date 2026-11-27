@@ -1,0 +1,6 @@
+{
+  "name": "AppVault",
+  "description": "An Android app marketplace suite featuring a Play Storefront, an embedded Developer Upload Website, and an Admin Approval Console backed by Firebase Firestore.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

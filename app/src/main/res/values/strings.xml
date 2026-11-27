@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">AppVault Store</string>
+    <string name="reviewer_app_name">App Reviewer</string>
+    <string name="shortcut_store_short">Play Store</string>
+    <string name="shortcut_store_long">Open AppVault Play Store</string>
+    <string name="shortcut_web_short">Upload Web</string>
+    <string name="shortcut_web_long">Open Developer Upload Website</string>
+    <string name="shortcut_review_short">App Reviewer</string>
+    <string name="shortcut_review_long">Open App Reviewer Console</string>
+    <string name="auth_hero_title">AppVault Suite</string>
+    <string name="auth_hero_subtitle">Two dedicated apps &amp; a live web portal: AppVault Store, App Reviewer, and Developer Upload Website.</string>
+    <string name="sign_in_google">Sign in with Google</string>
+    <string name="nav_store">Store</string>
+    <string name="nav_website">Upload Web</string>
+    <string name="nav_reviewer">Approve</string>
+    <string name="nav_library">Library</string>
+    <string name="search_apps_hint">Search apps &amp; packages…</string>
+    <string name="open_in_browser">Open in Browser</string>
+    <string name="refresh_portal">Refresh Website</string>
+    <string name="approve_publish">Approve &amp; Publish</string>
+    <string name="reject_app">Reject</string>
+</resources>

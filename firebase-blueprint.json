@@ -1,0 +1,132 @@
+{
+  "entities": {
+    "MarketplaceApp": {
+      "title": "MarketplaceApp",
+      "description": "An Android app listing submitted via the Developer Upload Website and reviewed in the Admin Approval Console.",
+      "type": "object",
+      "properties": {
+        "developerId": { "type": "string", "description": "Firebase Auth UID of the submitting developer." },
+        "developerName": { "type": "string", "description": "Public studio or developer display name (no PII)." },
+        "name": { "type": "string", "description": "App display title (2 to 30 characters)." },
+        "packageName": { "type": "string", "description": "Android package identifier (e.g. com.studio.app)." },
+        "tagline": { "type": "string", "description": "Short promotional subtitle." },
+        "description": { "type": "string", "description": "Full Play Store listing description." },
+        "releaseNotes": { "type": "string", "description": "What's new in this version." },
+        "category": {
+          "type": "string",
+          "enum": ["Productivity", "Fitness", "Utilities", "Developer", "Entertainment", "Finance"]
+        },
+        "versionName": { "type": "string", "description": "Semantic version string (e.g. 1.2.0)." },
+        "sizeLabel": { "type": "string", "description": "Formatted package size (e.g. 18.4 MB)." },
+        "iconKey": { "type": "string", "description": "Icon preset or bundled drawable key." },
+        "accentHex": { "type": "string", "description": "Hex color string (#RRGGBB) for card/icon theming." },
+        "status": {
+          "type": "string",
+          "enum": ["PENDING", "APPROVED", "REJECTED"]
+        },
+        "reviewNote": { "type": "string", "description": "Reviewer approval or rejection notes." },
+        "reviewedBy": { "type": "string", "description": "UID of the reviewer who processed the submission." },
+        "downloadsCount": { "type": "integer", "description": "Total virtual store installs." },
+        "ratingAvg": { "type": "number", "description": "Average user star rating (0.0 to 5.0)." },
+        "ratingCount": { "type": "integer", "description": "Total number of user reviews." },
+        "source": {
+          "type": "string",
+          "enum": ["WEBSITE", "STORE_SEED", "STUDIO"]
+        },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp when created." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp when last updated." },
+        "reviewedAt": { "type": "string", "format": "date-time", "description": "Server timestamp when reviewed." }
+      },
+      "required": [
+        "developerId",
+        "developerName",
+        "name",
+        "packageName",
+        "tagline",
+        "description",
+        "releaseNotes",
+        "category",
+        "versionName",
+        "sizeLabel",
+        "iconKey",
+        "accentHex",
+        "status",
+        "reviewNote",
+        "reviewedBy",
+        "downloadsCount",
+        "ratingAvg",
+        "ratingCount",
+        "source",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AppReview": {
+      "title": "AppReview",
+      "description": "A user rating and written review for an approved store app.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Reviewer Firebase Auth UID." },
+        "authorName": { "type": "string", "description": "Reviewer display name." },
+        "rating": { "type": "integer", "description": "Star rating from 1 to 5." },
+        "comment": { "type": "string", "description": "Review text." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp when created." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp when updated." }
+      },
+      "required": ["userId", "authorName", "rating", "comment", "createdAt", "updatedAt"]
+    },
+    "InstalledApp": {
+      "title": "InstalledApp",
+      "description": "Tracks an app installed by the signed-in user from AppVault Store.",
+      "type": "object",
+      "properties": {
+        "appId": { "type": "string" },
+        "appName": { "type": "string" },
+        "packageName": { "type": "string" },
+        "versionName": { "type": "string" },
+        "category": { "type": "string" },
+        "iconKey": { "type": "string" },
+        "accentHex": { "type": "string" },
+        "installedAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "appId",
+        "appName",
+        "packageName",
+        "versionName",
+        "category",
+        "iconKey",
+        "accentHex",
+        "installedAt",
+        "updatedAt"
+      ]
+    },
+    "AdminRole": {
+      "title": "AdminRole",
+      "description": "Trusted admin role marker document.",
+      "type": "object",
+      "properties": {
+        "grantedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "/apps/{appId}": {
+      "schema": { "$ref": "#/entities/MarketplaceApp" },
+      "description": "Marketplace app submissions and approved Play Store listings."
+    },
+    "/apps/{appId}/reviews/{userId}": {
+      "schema": { "$ref": "#/entities/AppReview" },
+      "description": "Per-user reviews on approved apps."
+    },
+    "/users/{userId}/installedApps/{appId}": {
+      "schema": { "$ref": "#/entities/InstalledApp" },
+      "description": "Apps installed by the authenticated user."
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/AdminRole" },
+      "description": "Read-only admin registry."
+    }
+  }
+}

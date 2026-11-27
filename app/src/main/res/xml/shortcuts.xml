@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="shortcut_store"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_store_short"
+        android:shortcutLongLabel="@string/shortcut_store_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.aistudio.appvault.rxkmtq"
+            android:targetClass="com.example.MainActivity">
+            <extra android:name="start_tab" android:value="store" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="shortcut_website"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_web_short"
+        android:shortcutLongLabel="@string/shortcut_web_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.aistudio.appvault.rxkmtq"
+            android:targetClass="com.example.MainActivity">
+            <extra android:name="start_tab" android:value="website" />
+        </intent>
+    </shortcut>
+    <shortcut
+        android:shortcutId="shortcut_reviewer"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_review_short"
+        android:shortcutLongLabel="@string/shortcut_review_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.aistudio.appvault.rxkmtq"
+            android:targetClass="com.example.ReviewerActivity" />
+    </shortcut>
+</shortcuts>

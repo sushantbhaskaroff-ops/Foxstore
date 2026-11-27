@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>AppVault Developer Console — Upload App</title>
+  <style>
+    :root {
+      --bg: #080E1A;
+      --surface: #111A2E;
+      --surface-2: #17233C;
+      --border: rgba(148, 163, 184, 0.16);
+      --text: #F1F5F9;
+      --muted: #94A3B8;
+      --emerald: #10B981;
+      --emerald-dark: #059669;
+      --cyan: #06B6D4;
+      --amber: #F59E0B;
+      --rose: #F43F5E;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.12), transparent 45%),
+                  radial-gradient(circle at bottom left, rgba(6, 182, 212, 0.10), transparent 45%),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(8, 14, 26, 0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--emerald), var(--cyan));
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: #04121D;
+      font-size: 16px;
+    }
+    .brand-title {
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--emerald);
+      font-weight: 600;
+    }
+    .session-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+    }
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 18px 16px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      background: var(--surface);
+      padding: 5px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+    .tab-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--emerald), var(--emerald-dark));
+      color: #03150E;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+    .btn-ghost {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--cyan);
+      padding: 7px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .preview-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(6, 182, 212, 0.06));
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 18px;
+    }
+    .preview-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      flex-shrink: 0;
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    .preview-meta h3 {
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .preview-meta p {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .preview-tags {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 560px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .field { margin-bottom: 14px; }
+    label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    input, select, textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 11px 12px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--emerald);
+    }
+    textarea { min-height: 88px; resize: vertical; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+    .dropzone {
+      border: 1.5px dashed rgba(6, 182, 212, 0.45);
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      background: rgba(6, 182, 212, 0.05);
+      margin-bottom: 14px;
+      cursor: pointer;
+    }
+    .dropzone input { display: none; }
+    .dropzone-title { font-size: 13px; font-weight: 600; color: var(--cyan); }
+    .dropzone-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .picker-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .chip-opt {
+      padding: 7px 11px;
+      border-radius: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .chip-opt.selected {
+      border-color: var(--emerald);
+      background: rgba(16, 185, 129, 0.16);
+      color: var(--emerald);
+      font-weight: 700;
+    }
+    .swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
+    .swatch.selected {
+      border-color: #fff;
+      transform: scale(1.1);
+    }
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--emerald), var(--cyan));
+      color: #03150E;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .banner {
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 14px;
+      display: none;
+    }
+    .banner.success {
+      display: block;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6EE7B7;
+    }
+    .banner.error {
+      display: block;
+      background: rgba(244, 63, 94, 0.14);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      color: #FDA4AF;
+    }
+    .submission-item {
+      border: 1px solid var(--border);
+      background: var(--bg);
+      border-radius: 12px;
+      padding: 13px;
+      margin-bottom: 10px;
+    }
+    .submission-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 999px;
+      letter-spacing: 0.04em;
+    }
+    .status-PENDING { background: rgba(245, 158, 11, 0.18); color: #FCD34D; }
+    .status-APPROVED { background: rgba(16, 185, 129, 0.18); color: #6EE7B7; }
+    .status-REJECTED { background: rgba(244, 63, 94, 0.18); color: #FDA4AF; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-badge">▲</div>
+      <div>
+        <div class="brand-title">AppVault Developer Console</div>
+        <div class="brand-sub">WEB UPLOAD PORTAL • PORT 8765</div>
+      </div>
+    </div>
+    <div class="session-pill">
+      <span class="dot"></span>
+      <span id="sessionUser">Connecting session…</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="tabs">
+      <button class="tab-btn active" id="tabUpload" onclick="switchTab('upload')">Upload New App</button>
+      <button class="tab-btn" id="tabSubmissions" onclick="switchTab('submissions')">My Website Uploads (<span id="subCount">0</span>)</button>
+    </div>
+
+    <div id="alertBanner" class="banner"></div>
+
+    <section id="panelUpload">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Live Storefront Preview</div>
+          <button type="button" class="btn-ghost" onclick="fillSampleApp()">Fill Sample App</button>
+        </div>
+
+        <div class="preview-card">
+          <div class="preview-icon" id="prevIconBox" style="background:#10B981;">🚀</div>
+          <div class="preview-meta">
+            <h3 id="prevName">Your App Name</h3>
+            <p id="prevDev">Developer Studio • com.studio.app</p>
+            <div class="preview-tags">
+              <span class="tag" id="prevCat">Productivity</span>
+              <span class="tag" id="prevVer">v1.0.0</span>
+              <span class="tag" id="prevSize">16.4 MB</span>
+              <span class="tag" style="color:#FCD34D;">PENDING REVIEW</span>
+            </div>
+          </div>
+        </div>
+
+        <form id="uploadForm" onsubmit="submitApp(event)">
+          <label class="dropzone" for="apkInput">
+            <input type="file" id="apkInput" accept=".apk,.aab,.zip" onchange="handleFilePick(event)" />
+            <div class="dropzone-title" id="fileLabel">Tap to attach APK / AAB bundle metadata (optional)</div>
+            <div class="dropzone-sub">Reads filename &amp; package size locally — zero execution</div>
+          </label>
+
+          <div class="grid">
+            <div class="field">
+              <label>App Name <span id="nameLen">0/30</span></label>
+              <input id="appName" maxlength="30" required placeholder="e.g. BeatFlow Studio" oninput="syncPreview()" />
+            </div>
+            <div class="field">
+              <label>Package ID</label>
+              <input id="packageName" class="mono" maxlength="100" required placeholder="com.studio.beatflow" oninput="syncPreview()" />
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="field">
+              <label>Developer / Studio Name</label>
+              <input id="developerName" maxlength="60" required placeholder="Your Studio Name" oninput="syncPreview()" />
+            </div>
+            <div class="field">
+              <label>Category</label>
+              <select id="category" onchange="syncPreview()">
+                <option value="Productivity">Productivity</option>
+                <option value="Fitness">Fitness</option>
+                <option value="Utilities">Utilities</option>
+                <option value="Developer">Developer</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Finance">Finance</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid">
+            <div class="field">
+              <label>Version</label>
+              <input id="versionName" maxlength="20" required value="1.0.0" oninput="syncPreview()" />
+            </div>
+            <div class="field">
+              <label>Bundle Size</label>
+              <input id="sizeLabel" maxlength="20" required value="16.4 MB" oninput="syncPreview()" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>App Icon Preset &amp; Accent Color</label>
+            <div class="picker-row" id="iconPicker">
+              <button type="button" class="chip-opt selected" data-icon="rocket" data-emoji="🚀" onclick="selectIcon(this)">🚀 Launch</button>
+              <button type="button" class="chip-opt" data-icon="code" data-emoji="⚡" onclick="selectIcon(this)">⚡ Dev</button>
+              <button type="button" class="chip-opt" data-icon="music" data-emoji="🎵" onclick="selectIcon(this)">🎵 Audio</button>
+              <button type="button" class="chip-opt" data-icon="shield" data-emoji="🛡️" onclick="selectIcon(this)">🛡️ Vault</button>
+              <button type="button" class="chip-opt" data-icon="wallet" data-emoji="💳" onclick="selectIcon(this)">💳 Finance</button>
+              <button type="button" class="chip-opt" data-icon="game" data-emoji="🎮" onclick="selectIcon(this)">🎮 Arcade</button>
+            </div>
+            <div class="picker-row" style="margin-top:10px;" id="colorPicker">
+              <button type="button" class="swatch selected" data-color="#10B981" style="background:#10B981;" onclick="selectColor(this)"></button>
+              <button type="button" class="swatch" data-color="#06B6D4" style="background:#06B6D4;" onclick="selectColor(this)"></button>
+              <button type="button" class="swatch" data-color="#8B5CF6" style="background:#8B5CF6;" onclick="selectColor(this)"></button>
+              <button type="button" class="swatch" data-color="#F97316" style="background:#F97316;" onclick="selectColor(this)"></button>
+              <button type="button" class="swatch" data-color="#EC4899" style="background:#EC4899;" onclick="selectColor(this)"></button>
+              <button type="button" class="swatch" data-color="#EAB308" style="background:#EAB308;" onclick="selectColor(this)"></button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Short Tagline <span id="tagLen">0/80</span></label>
+            <input id="tagline" maxlength="80" required placeholder="One-line pitch for the Play Store card" oninput="syncPreview()" />
+          </div>
+
+          <div class="field">
+            <label>Full Store Description (min 10 chars)</label>
+            <textarea id="description" maxlength="1000" required placeholder="Describe key features, offline support, and why users love this app…"></textarea>
+          </div>
+
+          <div class="field">
+            <label>Release Notes</label>
+            <input id="releaseNotes" maxlength="400" value="Initial release uploaded via AppVault Developer Website." />
+          </div>
+
+          <button type="submit" class="btn-primary" id="submitBtn">Upload App to Review Queue</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="panelSubmissions" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Uploaded Apps Status</div>
+          <button type="button" class="btn-ghost" onclick="loadMyApps()">Refresh</button>
+        </div>
+        <div id="submissionsList">
+          <p style="color:var(--muted);font-size:13px;">Loading your uploaded apps…</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let selectedIcon = "rocket";
+    let selectedEmoji = "🚀";
+    let selectedColor = "#10B981";
+    let sessionToken = "";
+
+    function switchTab(tab) {
+      document.getElementById("tabUpload").classList.toggle("active", tab === "upload");
+      document.getElementById("tabSubmissions").classList.toggle("active", tab === "submissions");
+      document.getElementById("panelUpload").classList.toggle("hidden", tab !== "upload");
+      document.getElementById("panelSubmissions").classList.toggle("hidden", tab !== "submissions");
+      if (tab === "submissions") loadMyApps();
+    }
+
+    function showBanner(msg, type) {
+      const el = document.getElementById("alertBanner");
+      el.textContent = msg;
+      el.className = "banner " + type;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function selectIcon(btn) {
+      document.querySelectorAll("#iconPicker .chip-opt").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      selectedIcon = btn.dataset.icon;
+      selectedEmoji = btn.dataset.emoji;
+      syncPreview();
+    }
+
+    function selectColor(btn) {
+      document.querySelectorAll("#colorPicker .swatch").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      selectedColor = btn.dataset.color;
+      syncPreview();
+    }
+
+    function handleFilePick(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const mb = Math.max(0.2, file.size / (1024 * 1024)).toFixed(1);
+      document.getElementById("fileLabel").textContent = "Attached: " + file.name + " (" + mb + " MB)";
+      document.getElementById("sizeLabel").value = mb + " MB";
+      const base = file.name.replace(/\.(apk|aab|zip)$/i, "").replace(/[^a-zA-Z0-9 ]/g, " ").trim();
+      if (base && !document.getElementById("appName").value) {
+        document.getElementById("appName").value = base.slice(0, 30);
+        const pkgSlug = base.toLowerCase().replace(/[^a-z0-9]/g, "") || "myapp";
+        document.getElementById("packageName").value = "com.dev." + pkgSlug;
+      }
+      syncPreview();
+    }
+
+    function syncPreview() {
+      const name = document.getElementById("appName").value.trim() || "Your App Name";
+      const pkg = document.getElementById("packageName").value.trim() || "com.studio.app";
+      const dev = document.getElementById("developerName").value.trim() || "Developer Studio";
+      const cat = document.getElementById("category").value;
+      const ver = document.getElementById("versionName").value.trim() || "1.0.0";
+      const size = document.getElementById("sizeLabel").value.trim() || "16.4 MB";
+      const tag = document.getElementById("tagline").value;
+
+      document.getElementById("nameLen").textContent = document.getElementById("appName").value.length + "/30";
+      document.getElementById("tagLen").textContent = tag.length + "/80";
+      document.getElementById("prevName").textContent = name;
+      document.getElementById("prevDev").textContent = dev + " • " + pkg;
+      document.getElementById("prevCat").textContent = cat;
+      document.getElementById("prevVer").textContent = "v" + ver;
+      document.getElementById("prevSize").textContent = size;
+      const iconBox = document.getElementById("prevIconBox");
+      iconBox.textContent = selectedEmoji;
+      iconBox.style.background = selectedColor;
+    }
+
+    function fillSampleApp() {
+      const samples = [
+        {
+          name: "BeatFlow Studio",
+          pkg: "com.aurora.beatflow",
+          cat: "Entertainment",
+          ver: "2.1.0",
+          size: "22.8 MB",
+          icon: "music",
+          emoji: "🎵",
+          color: "#8B5CF6",
+          tagline: "Loop-based pocket synth & beat maker",
+          desc: "Compose studio-grade lo-fi and electronic beats on Android with 64-pad velocity triggers, real-time reverb, and lossless WAV export."
+        },
+        {
+          name: "LedgerZen",
+          pkg: "com.fincraft.ledgerzen",
+          cat: "Finance",
+          ver: "1.4.2",
+          size: "11.6 MB",
+          icon: "wallet",
+          emoji: "💳",
+          color: "#10B981",
+          tagline: "Zero-clutter expense & subscription tracker",
+          desc: "Track recurring bills, set monthly category budgets, and export clean CSV reports with instant cloud backup."
+        },
+        {
+          name: "DevPulse Inspector",
+          pkg: "com.buildlab.devpulse",
+          cat: "Developer",
+          ver: "3.0.1",
+          size: "9.4 MB",
+          icon: "code",
+          emoji: "⚡",
+          color: "#06B6D4",
+          tagline: "REST API tester & JSON formatter on mobile",
+          desc: "Send authenticated HTTP requests, inspect response headers, and validate JSON schemas right from your phone."
+        }
+      ];
+      const pick = samples[Math.floor(Math.random() * samples.length)];
+      document.getElementById("appName").value = pick.name;
+      document.getElementById("packageName").value = pick.pkg;
+      document.getElementById("category").value = pick.cat;
+      document.getElementById("versionName").value = pick.ver;
+      document.getElementById("sizeLabel").value = pick.size;
+      document.getElementById("tagline").value = pick.tagline;
+      document.getElementById("description").value = pick.desc;
+      document.getElementById("releaseNotes").value = "Uploaded from AppVault Web Portal with Material 3 adaptive support.";
+      const iconBtn = document.querySelector(`#iconPicker [data-icon="${pick.icon}"]`);
+      if (iconBtn) selectIcon(iconBtn);
+      const colorBtn = document.querySelector(`#colorPicker [data-color="${pick.color}"]`);
+      if (colorBtn) selectColor(colorBtn);
+      syncPreview();
+    }
+
+    async function loadSession() {
+      try {
+        const res = await fetch("/api/session");
+        const data = await res.json();
+        sessionToken = data.token || "";
+        document.getElementById("sessionUser").textContent = data.developerName || "Signed In";
+        if (!document.getElementById("developerName").value && data.developerName) {
+          document.getElementById("developerName").value = data.developerName;
+          syncPreview();
+        }
+      } catch (e) {
+        document.getElementById("sessionUser").textContent = "Local Portal";
+      }
+    }
+
+    async function loadMyApps() {
+      try {
+        const res = await fetch("/api/my-apps");
+        const data = await res.json();
+        const items = data.apps || [];
+        document.getElementById("subCount").textContent = items.length;
+        const list = document.getElementById("submissionsList");
+        if (items.length === 0) {
+          list.innerHTML = '<p style="color:var(--muted);font-size:13px;">No apps uploaded from this account yet. Submit your first app in the Upload tab!</p>';
+          return;
+        }
+        list.innerHTML = items.map(app => `
+          <div class="submission-item">
+            <div class="submission-top">
+              <div>
+                <strong>${escapeHtml(app.name)}</strong>
+                <div class="mono" style="color:var(--muted);font-size:11px;">${escapeHtml(app.packageName)} • v${escapeHtml(app.versionName)}</div>
+              </div>
+              <span class="status-badge status-${escapeHtml(app.status)}">${escapeHtml(app.status)}</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-top:6px;">${escapeHtml(app.tagline)}</div>
+            ${app.reviewNote ? `<div style="font-size:12px;color:#38BDF8;margin-top:6px;">Reviewer note: ${escapeHtml(app.reviewNote)}</div>` : ""}
+          </div>
+        `).join("");
+      } catch (e) {
+        document.getElementById("submissionsList").innerHTML = '<p style="color:#FDA4AF;font-size:13px;">Failed to load submissions.</p>';
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str || "").replace(/[&<>"']/g, s => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+      }[s]));
+    }
+
+    async function submitApp(e) {
+      e.preventDefault();
+      const btn = document.getElementById("submitBtn");
+      btn.disabled = true;
+      btn.textContent = "Uploading to Firestore…";
+      document.getElementById("alertBanner").className = "banner";
+
+      const payload = {
+        token: sessionToken,
+        name: document.getElementById("appName").value.trim(),
+        packageName: document.getElementById("packageName").value.trim(),
+        developerName: document.getElementById("developerName").value.trim(),
+        category: document.getElementById("category").value,
+        versionName: document.getElementById("versionName").value.trim(),
+        sizeLabel: document.getElementById("sizeLabel").value.trim(),
+        iconKey: selectedIcon,
+        accentHex: selectedColor,
+        tagline: document.getElementById("tagline").value.trim(),
+        description: document.getElementById("description").value.trim(),
+        releaseNotes: document.getElementById("releaseNotes").value.trim()
+      };
+
+      try {
+        const res = await fetch("/api/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (!res.ok || !result.ok) {
+          throw new Error(result.error || "Upload failed");
+        }
+        showBanner("Uploaded \"" + payload.name + "\"! Open the Approve tab to review & publish it to the Play Store.", "success");
+        document.getElementById("uploadForm").reset();
+        document.getElementById("versionName").value = "1.0.0";
+        document.getElementById("sizeLabel").value = "16.4 MB";
+        document.getElementById("fileLabel").textContent = "Tap to attach APK / AAB bundle metadata (optional)";
+        loadSession();
+        loadMyApps();
+        syncPreview();
+      } catch (err) {
+        showBanner(err.message || "Submission failed", "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Upload App to Review Queue";
+      }
+    }
+
+    loadSession();
+    loadMyApps();
+    syncPreview();
+  </script>
+</body>
+</html>

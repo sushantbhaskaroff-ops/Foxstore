@@ -1,0 +1,241 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Core Helpers
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (request.auth.token.email == 'sushantbhaskaroff@gmail.com' && request.auth.token.email_verified == true)
+      );
+    }
+
+    // Entity Validators
+    function isValidApp(data) {
+      return data.developerId is string && data.developerId.size() >= 1 && data.developerId.size() <= 128 &&
+             data.developerName is string && data.developerName.size() >= 1 && data.developerName.size() <= 60 &&
+             data.name is string && data.name.size() >= 2 && data.name.size() <= 30 &&
+             data.packageName is string && data.packageName.size() >= 3 && data.packageName.size() <= 100 &&
+             data.packageName.matches('^[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z0-9_]+)+$') &&
+             data.tagline is string && data.tagline.size() >= 2 && data.tagline.size() <= 80 &&
+             data.description is string && data.description.size() >= 10 && data.description.size() <= 1000 &&
+             data.releaseNotes is string && data.releaseNotes.size() <= 400 &&
+             data.category in ['Productivity', 'Fitness', 'Utilities', 'Developer', 'Entertainment', 'Finance'] &&
+             data.versionName is string && data.versionName.size() >= 1 && data.versionName.size() <= 20 &&
+             data.sizeLabel is string && data.sizeLabel.size() >= 2 && data.sizeLabel.size() <= 20 &&
+             data.iconKey is string && data.iconKey.size() >= 1 && data.iconKey.size() <= 40 &&
+             data.accentHex is string && data.accentHex.size() == 7 && data.accentHex.matches('^#[0-9A-Fa-f]{6}$') &&
+             data.status in ['PENDING', 'APPROVED', 'REJECTED'] &&
+             data.reviewNote is string && data.reviewNote.size() <= 300 &&
+             data.reviewedBy is string && data.reviewedBy.size() <= 128 &&
+             data.downloadsCount is int && data.downloadsCount >= 0 &&
+             (data.ratingAvg is float || data.ratingAvg is int) && data.ratingAvg >= 0 && data.ratingAvg <= 5 &&
+             data.ratingCount is int && data.ratingCount >= 0 &&
+             data.source in ['WEBSITE', 'STORE_SEED', 'STUDIO'] &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time &&
+             (!('reviewedAt' in data) || (data.reviewedAt is timestamp && data.reviewedAt <= request.time));
+    }
+
+    function isValidReview(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 60 &&
+             data.rating is int && data.rating >= 1 && data.rating <= 5 &&
+             data.comment is string && data.comment.size() >= 1 && data.comment.size() <= 500 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidInstalledApp(data) {
+      return data.appId is string && data.appId.size() >= 1 && data.appId.size() <= 128 &&
+             data.appName is string && data.appName.size() >= 2 && data.appName.size() <= 30 &&
+             data.packageName is string && data.packageName.size() >= 3 && data.packageName.size() <= 100 &&
+             data.versionName is string && data.versionName.size() >= 1 && data.versionName.size() <= 20 &&
+             data.category is string && data.category.size() >= 1 && data.category.size() <= 30 &&
+             data.iconKey is string && data.iconKey.size() >= 1 && data.iconKey.size() <= 40 &&
+             data.accentHex is string && data.accentHex.size() == 7 && data.accentHex.matches('^#[0-9A-Fa-f]{6}$') &&
+             data.installedAt is timestamp && data.installedAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // Admin registry (client-immutable)
+    match /admins/{userId} {
+      allow get: if isSignedIn() && request.auth.uid == userId;
+      allow list, write: if false;
+    }
+
+    // Marketplace Apps
+    match /apps/{appId} {
+      allow get: if isSignedIn() && isValidId(appId) && (
+        existing().status == 'APPROVED' ||
+        existing().developerId == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow list: if isSignedIn() && (
+        existing().status == 'APPROVED' ||
+        existing().developerId == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow create: if isSignedIn() &&
+                       isValidId(appId) &&
+                       isValidApp(incoming()) &&
+                       incoming().developerId == request.auth.uid &&
+                       incoming().keys().hasAll([
+                         'developerId', 'developerName', 'name', 'packageName', 'tagline',
+                         'description', 'releaseNotes', 'category', 'versionName', 'sizeLabel',
+                         'iconKey', 'accentHex', 'status', 'reviewNote', 'reviewedBy',
+                         'downloadsCount', 'ratingAvg', 'ratingCount', 'source',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'developerId', 'developerName', 'name', 'packageName', 'tagline',
+                         'description', 'releaseNotes', 'category', 'versionName', 'sizeLabel',
+                         'iconKey', 'accentHex', 'status', 'reviewNote', 'reviewedBy',
+                         'downloadsCount', 'ratingAvg', 'ratingCount', 'source',
+                         'createdAt', 'updatedAt', 'reviewedAt'
+                       ]) &&
+                       (
+                         isAdmin() ||
+                         (
+                           incoming().status == 'PENDING' &&
+                           incoming().reviewNote == '' &&
+                           incoming().reviewedBy == '' &&
+                           !('reviewedAt' in incoming()) &&
+                           incoming().downloadsCount == 0 &&
+                           incoming().ratingCount == 0 &&
+                           incoming().ratingAvg == 0
+                         )
+                       );
+
+      allow update: if isSignedIn() &&
+                       isValidId(appId) &&
+                       isValidApp(incoming()) &&
+                       incoming().developerId == existing().developerId &&
+                       incoming().packageName == existing().packageName &&
+                       incoming().source == existing().source &&
+                       incoming().createdAt == existing().createdAt &&
+                       (
+                         // Action 1: Admin Approval / Rejection Moderation
+                         (
+                           isAdmin() &&
+                           incoming().reviewedBy == request.auth.uid &&
+                           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'reviewNote', 'reviewedBy', 'reviewedAt', 'updatedAt'])
+                         ) ||
+                         // Action 2: Developer Edit & Resubmit (only when not yet approved)
+                         (
+                           existing().developerId == request.auth.uid &&
+                           existing().status in ['PENDING', 'REJECTED'] &&
+                           incoming().status == 'PENDING' &&
+                           incoming().diff(existing()).affectedKeys().hasOnly([
+                             'name', 'tagline', 'description', 'releaseNotes', 'category',
+                             'versionName', 'sizeLabel', 'iconKey', 'accentHex', 'status', 'updatedAt'
+                           ])
+                         ) ||
+                         // Action 3: Shopper Virtual Install Counter Increment
+                         (
+                           existing().status == 'APPROVED' &&
+                           incoming().downloadsCount == existing().downloadsCount + 1 &&
+                           incoming().diff(existing()).affectedKeys().hasOnly(['downloadsCount', 'updatedAt'])
+                         ) ||
+                         // Action 4: Shopper Review Rating Sync (atomic with user review write)
+                         (
+                           existing().status == 'APPROVED' &&
+                           existsAfter(/databases/$(database)/documents/apps/$(appId)/reviews/$(request.auth.uid)) &&
+                           incoming().ratingCount >= existing().ratingCount &&
+                           incoming().ratingCount <= existing().ratingCount + 1 &&
+                           incoming().diff(existing()).affectedKeys().hasOnly(['ratingAvg', 'ratingCount', 'updatedAt'])
+                         )
+                       );
+
+      allow delete: if isSignedIn() && isValidId(appId) && (
+        isAdmin() ||
+        (existing().developerId == request.auth.uid && existing().status != 'APPROVED')
+      );
+
+      // App Reviews Subcollection
+      match /reviews/{userId} {
+        allow get: if isSignedIn() && isValidId(appId) && isValidId(userId);
+        allow list: if isSignedIn() && isValidId(appId);
+
+        allow create: if isSignedIn() &&
+                         isValidId(appId) &&
+                         isValidId(userId) &&
+                         request.auth.uid == userId &&
+                         incoming().userId == request.auth.uid &&
+                         isValidReview(incoming()) &&
+                         incoming().keys().hasAll(['userId', 'authorName', 'rating', 'comment', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'authorName', 'rating', 'comment', 'createdAt', 'updatedAt']) &&
+                         exists(/databases/$(database)/documents/apps/$(appId)) &&
+                         get(/databases/$(database)/documents/apps/$(appId)).data.status == 'APPROVED';
+
+        allow update: if isSignedIn() &&
+                         isValidId(appId) &&
+                         isValidId(userId) &&
+                         request.auth.uid == userId &&
+                         isValidReview(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['authorName', 'rating', 'comment', 'updatedAt']);
+
+        allow delete: if isSignedIn() && isValidId(appId) && isValidId(userId) && (
+          request.auth.uid == userId || isAdmin()
+        );
+      }
+    }
+
+    // User Installed Apps Library
+    match /users/{userId}/installedApps/{appId} {
+      allow get: if isSignedIn() && request.auth.uid == userId && isValidId(appId);
+      allow list: if isSignedIn() && request.auth.uid == userId;
+
+      allow create: if isSignedIn() &&
+                       request.auth.uid == userId &&
+                       isValidId(appId) &&
+                       isValidInstalledApp(incoming()) &&
+                       incoming().keys().hasAll([
+                         'appId', 'appName', 'packageName', 'versionName', 'category',
+                         'iconKey', 'accentHex', 'installedAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'appId', 'appName', 'packageName', 'versionName', 'category',
+                         'iconKey', 'accentHex', 'installedAt', 'updatedAt'
+                       ]) &&
+                       exists(/databases/$(database)/documents/apps/$(appId)) &&
+                       get(/databases/$(database)/documents/apps/$(appId)).data.status == 'APPROVED';
+
+      allow update: if isSignedIn() &&
+                       request.auth.uid == userId &&
+                       isValidId(appId) &&
+                       isValidInstalledApp(incoming()) &&
+                       incoming().appId == existing().appId &&
+                       incoming().packageName == existing().packageName &&
+                       incoming().installedAt == existing().installedAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['appName', 'versionName', 'category', 'iconKey', 'accentHex', 'updatedAt']);
+
+      allow delete: if isSignedIn() && request.auth.uid == userId && isValidId(appId);
+    }
+  }
+}
